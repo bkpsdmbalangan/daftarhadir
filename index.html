@@ -126,7 +126,20 @@
               location.reload();
             }
           });
-        } else {
+        } 
+        else if(res.status === 'closed') {
+          // SweetAlert khusus untuk Waktu Habis
+          Swal.fire({
+            icon: 'info',
+            title: 'Formulir Ditutup',
+            text: res.message, // Menampilkan pesan dari GAS
+            background: '#1e293b',
+            color: '#fff',
+            confirmButtonColor: '#fbbf24',
+            customClass: { confirmButton: 'swal-btn-text-dark' }
+          });
+        }
+        else {
           // 4. SweetAlert untuk Error dari Server
           Swal.fire({
             icon: 'error',
