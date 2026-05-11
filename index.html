@@ -42,10 +42,6 @@
       <label>Unit Kerja</label>
       <input type="text" id="unit" placeholder="Contoh: BKPSDM Kabupaten Balangan">
     </div>
-    <div class="form-group">
-      <label>Email Gmail Aktif</label>
-      <input type="email" id="email" placeholder="Contoh: budi@gmail.com">
-    </div>
     
     <button onclick="submitForm()">KIRIM</button>
     <footer>© 2026 – BKPSDM Balangan</footer>
@@ -107,12 +103,12 @@
     function submitForm() {
       const data = {
         nama: document.getElementById('nama').value,
-        unit: document.getElementById('unit').value,
-        email: document.getElementById('email').value
+        unit: document.getElementById('unit').value
+        // data email dihapus dari sini
       };
-      
-      // 1. SweetAlert untuk Validasi Bidang Kosong
-      if(!data.nama || !data.unit || !data.email) {
+
+      // 1. SweetAlert untuk Validasi Bidang Kosong (Hanya ngecek nama dan unit)
+      if(!data.nama || !data.unit) {
         return Swal.fire({
           icon: 'warning',
           title: 'Perhatian',
@@ -123,7 +119,7 @@
           customClass: { confirmButton: 'swal-btn-text-dark' }
         });
       }
-      
+            
       // 2. SweetAlert untuk Loading Animasi
       Swal.fire({
         title: 'Memproses...',
