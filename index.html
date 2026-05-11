@@ -57,6 +57,53 @@
     // MASUKKAN URL WEB APP GAS KAMU DI SINI
     const API_URL = 'https://script.google.com/macros/s/AKfycbwXlupppAVU41aURwZcRaJsGF-6bSA-5VbxTRGbbSSC2Dll-IpLT-dQFm9W6vtabBz5NQ/exec'; 
 
+    // Mengecek status formulir saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+      // Munculkan loading tidak bisa ditutup saat mengecek ke server
+      Swal.fire({
+        title: 'Memeriksa Sistem...',
+        html: 'Menghubungkan ke server BKPSDM.',
+        background: '#1e293b',
+        color: '#fff',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+  
+      // Melakukan GET request ke GAS
+      fetch(API_URL, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(response => response.json())
+      .then(res => {
+        if (res.status === 'closed') {
+          // Jika ditutup, ubah SweetAlert menjadi peringatan yang TIDAK BISA DITUTUP
+          Swal.fire({
+            icon: 'warning',
+            title: 'Formulir Ditutup',
+            text: res.message,
+            background: '#1e293b',
+            color: '#fff',
+            allowOutsideClick: false, // Tidak bisa klik di luar
+            allowEscapeKey: false,    // Tidak bisa tekan tombol ESC
+            showConfirmButton: false, // Tombol OK dihilangkan
+            backdrop: `rgba(0,0,0,0.9)` // Menggelapkan latar belakang secara total
+          });
+        } else {
+          // Jika masih buka, tutup loading dan biarkan user mengisi form
+          Swal.close();
+        }
+      })
+      .catch(error => {
+        // Jika terjadi gangguan koneksi, tutup loading agar user bisa mencoba submit manual
+        Swal.close();
+      });
+    });
+    
     function submitForm() {
       const data = {
         nama: document.getElementById('nama').value,
