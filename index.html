@@ -23,12 +23,9 @@
     button { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: var(--primary); font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 16px; }
     button:hover { transform: translateY(-2px); opacity: 0.9; }
     footer { margin-top: 30px; font-size: 11px; color: #64748b; }
+
+    .swal-btn-text-dark { color: #003366 !important; font-weight: bold; }
     
-    /* Loading Modal */
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
-    .modal-content { background: #1e293b; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid var(--accent); }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -54,13 +51,8 @@
     <footer>© 2026 – BKPSDM Balangan</footer>
   </div>
 
-  <div id="modal">
-    <div class="modal-content" id="mContent">
-      <div class="loader"></div>
-      <p id="mText">Sedang memproses sertifikat Anda...</p>
-    </div>
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <script>
     // MASUKKAN URL WEB APP GAS KAMU DI SINI
     const API_URL = 'https://script.google.com/macros/s/AKfycbwXlupppAVU41aURwZcRaJsGF-6bSA-5VbxTRGbbSSC2Dll-IpLT-dQFm9W6vtabBz5NQ/exec'; 
@@ -72,33 +64,90 @@
         email: document.getElementById('email').value
       };
       
-      if(!data.nama || !data.unit || !data.email) return alert('Mohon isi semua bidang!');
+      // 1. SweetAlert untuk Validasi Bidang Kosong
+      if(!data.nama || !data.unit || !data.email) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'Perhatian',
+          text: 'Mohon isi semua bidang yang tersedia!',
+          background: '#1e293b',
+          color: '#fff',
+          confirmButtonColor: '#fbbf24',
+          customClass: { confirmButton: 'swal-btn-text-dark' }
+        });
+      }
       
-      // Tampilkan Modal Loading
-      document.getElementById('modal').style.display = 'flex';
+      // 2. SweetAlert untuk Loading Animasi
+      Swal.fire({
+        title: 'Memproses...',
+        html: 'Sedang membuat dan mengirim sertifikat Anda.',
+        background: '#1e293b',
+        color: '#fff',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
       
-      // Kirim data ke GAS menggunakan fetch
+      // Kirim data ke GAS
       fetch(API_URL, {
         method: 'POST',
+        redirect: 'follow',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
         body: JSON.stringify(data)
       })
       .then(response => response.json())
       .then(res => {
         if(res.status === 'success') {
-          document.getElementById('mContent').innerHTML = `
-            <h2 style="color:#fbbf24">Berhasil!</h2>
-            <p>Sertifikat telah dikirim ke email Anda.</p>
-            <button onclick="window.open('${res.pdfUrl}')" style="background:#fbbf24; color:#003366; padding: 10px 20px; border:none; border-radius: 8px; cursor: pointer; font-weight: bold;">Lihat Sertifikat</button>
-            <p style="margin-top:20px; font-size:12px; cursor:pointer; color:#94a3b8" onclick="location.reload()">Isi Kembali</p>
-          `;
+          // 3. SweetAlert untuk Sukses
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Sertifikat telah dikirim ke email Anda.',
+            background: '#1e293b',
+            color: '#fff',
+            showCancelButton: true,
+            confirmButtonColor: '#fbbf24',
+            cancelButtonColor: '#334155',
+            confirmButtonText: '<span style="color:#003366; font-weight:bold;">Lihat Sertifikat</span>',
+            cancelButtonText: 'Isi Kembali',
+            reverseButtons: true
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Buka PDF di tab baru jika tombol "Lihat Sertifikat" diklik
+              window.open(res.pdfUrl, '_blank');
+              // Refresh halaman setelah membuka tab baru
+              location.reload(); 
+            } else {
+              // Refresh halaman jika tombol "Isi Kembali" diklik
+              location.reload();
+            }
+          });
         } else {
-          alert('Terjadi kesalahan sistem: ' + res.message);
-          document.getElementById('modal').style.display = 'none';
+          // 4. SweetAlert untuk Error dari Server
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Terjadi kesalahan sistem: ' + res.message,
+            background: '#1e293b',
+            color: '#fff',
+            confirmButtonColor: '#fbbf24'
+          });
         }
       })
       .catch(error => {
-        alert('Gagal terhubung ke server. Pastikan koneksi internet stabil.');
-        document.getElementById('modal').style.display = 'none';
+        // 5. SweetAlert untuk Error Koneksi/CORS
+        Swal.fire({
+          icon: 'error',
+          title: 'Koneksi Terputus',
+          text: 'Gagal terhubung ke server. Pastikan koneksi internet stabil.',
+          background: '#1e293b',
+          color: '#fff',
+          confirmButtonColor: '#fbbf24'
+        });
       });
     }
   </script>
